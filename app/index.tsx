@@ -1,11 +1,15 @@
-import { Text, View, StyleSheet, Platform } from 'react-native';
-
+import { Text, View, StyleSheet, Platform, Button } from 'react-native';
+import WheelSelector from '@/app/components/WheelSelector';
 export default function Index() {
   return (
     <View style={styles.container}>
       <Text style={styles.wheelName}>Restaurant Picker</Text>
       
+      <View style={styles.wheelContainer}>
+        <WheelSelector></WheelSelector>
+      </View>
     </View>
+
   );
 }
 
@@ -27,7 +31,11 @@ const styles = StyleSheet.create({
       android: 'Roboto',
     }),
   },
-  text: {
-    color: '#000',
-  },
+  wheelContainer: {
+    flex: 3/4,
+    alignItems: 'center',
+    //backgroundColor: '#25292e',
+    borderColor: '#25292e',
+    borderWidth: 5,
+  }
 });

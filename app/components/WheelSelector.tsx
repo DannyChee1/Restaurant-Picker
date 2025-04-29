@@ -1,12 +1,14 @@
 import { StyleSheet, View, Pressable, Text } from 'react-native';
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 
 const restaurantWheelImage = null;
 
 export default function wheelSelectBox() {
+    const router = useRouter();
     return (
         <View style={styles.buttonContainer}>
-            <Pressable style={styles.button} onPress={() => alert("Pressed")}>
+            <Pressable style={styles.button} onPress={() => router.push('/restaurant_filter')}>
             </Pressable>
         </View>
     )

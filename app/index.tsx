@@ -1,5 +1,6 @@
 import { Text, View, StyleSheet, Platform, Button } from 'react-native';
 import WheelSelector from '@/app/components/WheelSelector';
+import { Link } from 'expo-router';
 export default function Index() {
   return (
     <View style={styles.container}>
@@ -8,6 +9,7 @@ export default function Index() {
       <View style={styles.wheelContainer}>
         <WheelSelector></WheelSelector>
       </View>
+
     </View>
 
   );
@@ -18,14 +20,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fefefe',
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
     paddingTop: 60,
   },
   wheelName: {
     fontSize: 24,
     fontWeight: '700',
     color: '#000',
-    marginBottom: 20,
+    marginBottom: 40,
     fontFamily: Platform.select({
       ios: 'System',
       android: 'Roboto',
@@ -37,5 +39,9 @@ const styles = StyleSheet.create({
     //backgroundColor: '#25292e',
     borderColor: '#25292e',
     borderWidth: 5,
+  },
+  txt: {
+    fontSize: 10,
+    color: '#000',
   }
 });

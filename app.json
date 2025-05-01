@@ -12,6 +12,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.dannychee.RestaurantPicker",
       "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "We need your location to select nearby restaurants on the map.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -36,8 +37,16 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
-    ],
+      ],
+      [
+      "expo-location",
+      {
+        "locationWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location to search for restaurants.",
+        "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+        
+      }
+    ]
+  ],
     "experiments": {
       "typedRoutes": true
     },

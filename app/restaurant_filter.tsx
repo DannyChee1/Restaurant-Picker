@@ -64,45 +64,26 @@ export default function RestaurantFilter() {
 
     const handleLocationToggle = async () => {
         if (!useCurrentLocation) {
-            Alert.alert(
-                'Use Current Location',
-                'Would you like to use your current location?',
-                [
-                    {
-                        text: 'No',
-                        style: 'cancel',
-                        onPress: () => {
-                            setUseCurrentLocation(false);
-                            setLocation(null);
-                            setLocationError(null);
-                        }
-                    },
-                    {
-                        text: 'Yes',
-                        onPress: async () => {
-                            const { status } = await Location.requestForegroundPermissionsAsync();
-                            if (status !== 'granted') {
-                                Alert.alert(
-                                    'Location Permission Required',
-                                    'Please enable location access to use your current location.',
-                                    [{ text: 'OK' }]
-                                );
-                                setUseCurrentLocation(false);
-                                return;
-                            }
-                            try {
-                                const currentLocation = await Location.getCurrentPositionAsync({});
-                                setLocation(currentLocation);
-                                setLocationError(null);
-                                setUseCurrentLocation(true);
-                            } catch (error) {
-                                setLocationError('Could not get location');
-                                setUseCurrentLocation(false);
-                            }
-                        }
-                    }
-                ]
-            );
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert(
+                    'Location Permission Required',
+                    'Please enable location access to use your current location.',
+                    [{ text: 'OK' }]
+                );
+                setUseCurrentLocation(false);
+                return;
+            }
+            try {
+                const currentLocation = await Location.getCurrentPositionAsync({});
+                setLocation(currentLocation);
+                setLocationError(null);
+                setUseCurrentLocation(true);
+                alert(JSON.stringify(currentLocation));
+            } catch (error) {
+                setLocationError('Could not get location');
+                setUseCurrentLocation(false);
+            }
         } else {
             setUseCurrentLocation(false);
             setLocation(null);
@@ -157,7 +138,7 @@ export default function RestaurantFilter() {
                             <Text style={styles.searchLocationText}>Search Location</Text>
                         </Pressable>
                     )}
-                    {locationError && (
+                    {/* {locationError && (
                         <Text style={styles.errorText}>{locationError}</Text>
                     )}
                     {location && (
@@ -167,7 +148,7 @@ export default function RestaurantFilter() {
                     )}
                     {!location && !useCurrentLocation && (
                         <Text style={styles.locationText}>Location: None</Text>
-                    )}
+                    )} */}
                 </View>
 
                 {/* Distance Section */}

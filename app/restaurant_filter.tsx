@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Slider from '@react-native-community/slider';
 import * as Location from 'expo-location';
 
+
 export default function RestaurantFilter() {
     const router = useRouter();
     const [useCurrentLocation, setUseCurrentLocation] = useState(false);
@@ -16,6 +17,7 @@ export default function RestaurantFilter() {
     const [isBackButtonPressed, setIsBackButtonPressed] = useState(false);
     const [isLocationButtonPressed, setIsLocationButtonPressed] = useState(false);
     const [showError, setShowError] = useState(false);
+    const [address, setAddress] = useState<string | null>(null);
 
     const cuisines = ['All', 'Chinese', 'Japanese', 'Korean', 'Vietnamese', 'Thai', 'Indian', 'Turkish', 'Lebanese', 'Israeli', 'Greek', 'Italian', 'Spanish', 'Portuguese', 'French', 'Mexican', 'Peruvian', 'Brazilian', 'Argentinian', 'Caribbean', 'German', 'Russian', 'African'];
 
@@ -62,6 +64,20 @@ export default function RestaurantFilter() {
         router.push('/');
     };
 
+    const reverseGeocode = async (latitude: number, longitude: number) => {
+        try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+            const data = await response.json();
+            if (data && data.address) {
+                setAddress(data.display_name);
+                return;
+            }
+
+        } catch (error) {
+            console.warn("Error fetching address");
+        }
+    };
+
     const handleLocationToggle = async () => {
         if (!useCurrentLocation) {
             const { status } = await Location.requestForegroundPermissionsAsync();
@@ -77,9 +93,9 @@ export default function RestaurantFilter() {
             try {
                 const currentLocation = await Location.getCurrentPositionAsync({});
                 setLocation(currentLocation);
-                setLocationError(null);
-                setUseCurrentLocation(true);
-                alert(JSON.stringify(currentLocation));
+                await reverseGeocode(currentLocation.coords.latitude, currentLocation.coords.longitude);
+                setUseCurrentLocation(true)
+
             } catch (error) {
                 setLocationError('Could not get location');
                 setUseCurrentLocation(false);
@@ -117,6 +133,7 @@ export default function RestaurantFilter() {
                 {/* Location Section */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Location</Text>
+                    {address ? <Text style={styles.locationText}>Address: {address}</Text> : <Text style={styles.locationText}>Address: None Selected</Text>}
                     <View style={styles.locationContainer}>
                         <Text style={styles.locationText}>Use Current Location</Text>
                         <Switch

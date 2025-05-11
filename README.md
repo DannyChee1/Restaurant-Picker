@@ -2,13 +2,13 @@
 
 A cross-platform (iOS & Android) mobile app that helps users decide where to dine by filtering restaurants based on budget, distance, cuisine, diet restrictions, and star rating, then randomly selecting one via an interactive wheel. It currently integrates Google Places & Geocoding, and will soon fetch Instagram, TikTok, and YouTube reels—and use MongoDB for centralized caching of API responses.
 
-![App Screenshot](docs/home.png)
+<img src="docs/home.png" alt="App Screenshot" width="300" />
+
 
 ---
 
 ## Demo Video
 
-<!-- Embed your demo here by replacing VIDEO_ID or pointing to your hosted video -->
 <iframe width="560" height="315" src="docs/record.mp4" title="Restaurant Roulette Demo" frameborder="0" allowfullscreen></iframe>
 
 ---

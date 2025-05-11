@@ -9,7 +9,9 @@ A cross-platform (iOS & Android) mobile app that helps users decide where to din
 
 ## Demo Video
 
-<iframe width="560" height="315" src="docs/record.mp4" title="Restaurant Roulette Demo" frameborder="0" allowfullscreen></iframe>
+<video src="docs/record.mp4" width="560" controls>
+  Your browser does not support the video tag.
+</video>
 
 ---
 

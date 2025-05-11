@@ -1,50 +1,54 @@
-# Welcome to your Expo app 👋
+# Restaurant Picker
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A cross-platform (iOS & Android) mobile app that helps users decide where to dine by filtering restaurants based on budget, distance, cuisine, diet restrictions, and star rating, then randomly selecting one via an interactive wheel. It currently integrates Google Places & Geocoding, and will soon fetch Instagram, TikTok, and YouTube reels—and use MongoDB for centralized caching of API responses.
 
-## Get started
+![App Screenshot](docs/home.png)
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## Demo Video
 
-2. Start the app
+<!-- Embed your demo here by replacing VIDEO_ID or pointing to your hosted video -->
+<iframe width="560" height="315" src="docs/record.mp4" title="Restaurant Roulette Demo" frameborder="0" allowfullscreen></iframe>
 
-   ```bash
-    npx expo start
-   ```
+---
 
-In the output, you'll find options to open the app in a
+## Overview
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Restaurant Roulette streamlines the decision-making process at mealtime:
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+1. **Filter** by budget tier, distance (km), cuisine type, diet restrictions, and star rating.  
+2. **Choose** your current GPS location or search for a custom address.  
+3. **Spin** an interactive wheel loaded with all matching restaurants.  
+4. **Select** your pick and view an overview, media reels, and aggregated reviews.  
+5. **Reroll** at any time to try another suggestion.
 
-## Get a fresh project
+---
 
-When you're ready, run:
+## Features
 
-```bash
-npm run reset-project
-```
+- **Custom Filters**: Budget levels, distance slider, cuisine & dietary restriction checkboxes, star-rating selector.  
+- **Location Flexibility**: Use device GPS or enter any address.  
+- **Interactive Wheel**: Visually spin to randomly select; remove entries and reroll at will. (Coming Soon)
+- **Future Media Integration**: Instagram, TikTok, and YouTube reels for in-app restaurant previews. (Coming Soon)
+- **Aggregated Reviews**: Google & Yelp reviews today (Coming Soon)
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-## Learn more
+## Tech Stack
 
-To learn more about developing your project with Expo, look at the following resources:
+### Frontend
+- React Native & Expo  
+- TypeScript  
+- React Navigation  
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Backend & APIs
+- Google Places & Geocoding APIs  
+- Nominatim (open-source reverse geocoding)  
+- YouTube Data API, Instagram Graph API, TikTok for Developers API (Coming Soon)
 
-## Join the community
+### Data & Caching
+- MongoDB (Coming Soon)
+- AsyncStorage (local caching for rapid reloads)  
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+---

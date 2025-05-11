@@ -1,8 +1,10 @@
-import { Text, View, StyleSheet, Pressable, ScrollView, Switch, Alert } from 'react-native';
+import 'react-native-get-random-values';
+import { Text, View, StyleSheet, Pressable, ScrollView, Switch, Alert, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Slider from '@react-native-community/slider';
 import * as Location from 'expo-location';
+import Constants from 'expo-constants';
 
 
 export default function RestaurantFilter() {
@@ -15,9 +17,12 @@ export default function RestaurantFilter() {
     const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
     const [selectedRestrictions, setSelectedRestrictions] = useState<string[]>([]);
     const [isBackButtonPressed, setIsBackButtonPressed] = useState(false);
-    const [isLocationButtonPressed, setIsLocationButtonPressed] = useState(false);
     const [showError, setShowError] = useState(false);
     const [address, setAddress] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [predictions, setPredictions] = useState<any[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const sessionToken = useRef<string | null>(null);
 
     const cuisines = ['All', 'Chinese', 'Japanese', 'Korean', 'Vietnamese', 'Thai', 'Indian', 'Turkish', 'Lebanese', 'Israeli', 'Greek', 'Italian', 'Spanish', 'Portuguese', 'French', 'Mexican', 'Peruvian', 'Brazilian', 'Argentinian', 'Caribbean', 'German', 'Russian', 'African'];
 
@@ -61,7 +66,7 @@ export default function RestaurantFilter() {
             return;
         }
         setShowError(false);
-        router.push('/');
+        router.push('/wheel');
     };
 
     const reverseGeocode = async (latitude: number, longitude: number) => {
@@ -94,8 +99,9 @@ export default function RestaurantFilter() {
                 const currentLocation = await Location.getCurrentPositionAsync({});
                 setLocation(currentLocation);
                 await reverseGeocode(currentLocation.coords.latitude, currentLocation.coords.longitude);
-                setUseCurrentLocation(true)
-
+                setUseCurrentLocation(true);
+                setSearchQuery('');
+                setPredictions([]);
             } catch (error) {
                 setLocationError('Could not get location');
                 setUseCurrentLocation(false);
@@ -104,6 +110,152 @@ export default function RestaurantFilter() {
             setUseCurrentLocation(false);
             setLocation(null);
             setLocationError(null);
+            setAddress(null);
+        }
+    };
+
+    const handleSearchPress = () => {
+        setSearchQuery('');
+        setUseCurrentLocation(false);
+        setLocation(null);
+        setLocationError(null);
+    };
+
+    // Generate a new session token
+    const generateSessionToken = () => {
+        const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        sessionToken.current = token;
+        return token;
+    };
+
+    // Initialize session token
+    useEffect(() => {
+        generateSessionToken();
+    }, []);
+
+    const searchPlaces = async (text: string) => {
+        if (!text.trim()) {
+            setPredictions([]);
+            return;
+        }
+
+        try {
+            // Add a small delay to prevent too many requests
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            const apiKey = Constants.expoConfig?.extra?.GOOGLE_PLACES_API_KEY;
+            console.log('API Key available:', !!apiKey);
+            console.log('API Key length:', apiKey?.length);
+
+            // Use Places API for address autocomplete with session token
+            const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(text)}&key=${apiKey}&sessiontoken=${sessionToken.current}&types=address&components=country:us`;
+            console.log('Making request to Places API...');
+
+            try {
+                const response = await fetch(url);
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
+                const data = await response.json();
+                console.log('Places API Response Status:', data.status);
+                console.log('Full API Response:', JSON.stringify(data, null, 2));
+                
+                if (data.error_message) {
+                    console.error('Places API Error:', data.error_message);
+                }
+
+                if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
+                    throw new Error(data.error_message || 'Places API error');
+                }
+
+                if (data.status === 'ZERO_RESULTS' || !data.predictions) {
+                    setPredictions([]);
+                    return;
+                }
+
+                setPredictions(data.predictions);
+            } catch (fetchError: any) {
+                console.error('Fetch error details:', {
+                    name: fetchError?.name,
+                    message: fetchError?.message,
+                    stack: fetchError?.stack
+                });
+                throw fetchError;
+            }
+        } catch (error: any) {
+            console.error('Error fetching predictions:', {
+                name: error?.name,
+                message: error?.message,
+                stack: error?.stack
+            });
+            setPredictions([]);
+            if (text.trim()) {
+                Alert.alert(
+                    'Search Error',
+                    `Error: ${error?.message || 'Unknown error occurred'}`,
+                    [{ text: 'OK' }]
+                );
+            }
+        }
+    };
+
+    const handlePlaceSelect = async (place: any) => {
+        try {
+            const apiKey = Constants.expoConfig?.extra?.GOOGLE_PLACES_API_KEY;
+            
+            // Get place details using the place_id with session token
+            const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&key=${apiKey}&sessiontoken=${sessionToken.current}&fields=formatted_address,geometry,name`;
+            console.log('Making request to Places Details API...');
+
+            const response = await fetch(detailsUrl);
+            const data = await response.json();
+            
+            console.log('Places Details API Response Status:', data.status);
+            if (data.error_message) {
+                console.error('Places Details API Error:', data.error_message);
+            }
+
+            if (data.status !== 'OK' || !data.result) {
+                throw new Error('Failed to get place details');
+            }
+
+            const result = data.result;
+            setAddress(result.formatted_address);
+            setLocation({
+                coords: {
+                    latitude: result.geometry.location.lat,
+                    longitude: result.geometry.location.lng,
+                    altitude: null,
+                    accuracy: null,
+                    altitudeAccuracy: null,
+                    heading: null,
+                    speed: null,
+                },
+                timestamp: Date.now()
+            });
+            setSearchQuery('');
+            setPredictions([]);
+            setIsSearching(false);
+
+            // Generate a new session token after successful place selection
+            generateSessionToken();
+        } catch (error) {
+            console.error('Error setting location:', error);
+            Alert.alert(
+                'Error',
+                'Failed to set location. Please try again.',
+                [{ text: 'OK' }]
+            );
+        }
+    };
+
+    // Add a function to handle search input changes with debounce
+    const handleSearchChange = (text: string) => {
+        setSearchQuery(text);
+        if (text.trim()) {
+            searchPlaces(text);
+        } else {
+            setPredictions([]);
         }
     };
 
@@ -144,28 +296,32 @@ export default function RestaurantFilter() {
                         />
                     </View>
                     {!useCurrentLocation && (
-                        <Pressable 
-                            style={[
-                                styles.searchLocationButton,
-                                isLocationButtonPressed && styles.backButtonPressed
-                            ]}
-                            onPressIn={() => setIsLocationButtonPressed(true)}
-                            onPressOut={() => setIsLocationButtonPressed(false)}
-                            onPress={() => alert("Search location functionality coming soon")}>
-                            <Text style={styles.searchLocationText}>Search Location</Text>
-                        </Pressable>
+                        <View style={styles.searchBarContainer}>
+                            <TextInput
+                                style={styles.searchInput}
+                                placeholder="Search for a location"
+                                value={searchQuery}
+                                onChangeText={handleSearchChange}
+                                onFocus={() => setIsSearching(true)}
+                                onBlur={() => {
+                                    setTimeout(() => setIsSearching(false), 200);
+                                }}
+                            />
+                            {isSearching && predictions.length > 0 && (
+                                <View style={styles.predictionsContainer}>
+                                    {predictions.map((prediction) => (
+                                        <Pressable
+                                            key={prediction.place_id}
+                                            style={styles.predictionItem}
+                                            onPress={() => handlePlaceSelect(prediction)}
+                                        >
+                                            <Text style={styles.predictionText}>{prediction.description}</Text>
+                                        </Pressable>
+                                    ))}
+                                </View>
+                            )}
+                        </View>
                     )}
-                    {/* {locationError && (
-                        <Text style={styles.errorText}>{locationError}</Text>
-                    )}
-                    {location && (
-                        <Text style={styles.locationText}>
-                            Current Location: {location.coords.latitude.toFixed(4)}, {location.coords.longitude.toFixed(4)}
-                        </Text>
-                    )}
-                    {!location && !useCurrentLocation && (
-                        <Text style={styles.locationText}>Location: None</Text>
-                    )} */}
                 </View>
 
                 {/* Distance Section */}
@@ -382,17 +538,18 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#000',
     },
-    searchLocationButton: {
-        backgroundColor: '#f0f0f0',
-        padding: 15,
-        borderRadius: 10,
-        alignItems: 'center',
+    searchBarContainer: {
+        marginTop: 10,
+        zIndex: 1,
+    },
+    searchInput: {
+        height: 44,
         borderWidth: 1,
         borderColor: '#e0e0e0',
-    },
-    searchLocationText: {
+        borderRadius: 10,
+        paddingHorizontal: 15,
         fontSize: 16,
-        color: '#000',
+        backgroundColor: '#fff',
     },
     distanceContainer: {
         paddingHorizontal: 10,
@@ -504,5 +661,27 @@ const styles = StyleSheet.create({
         fontSize: 12,
         textAlign: 'center',
         marginBottom: 8,
+    },
+    predictionsContainer: {
+        position: 'absolute',
+        top: 44,
+        left: 0,
+        right: 0,
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        borderRadius: 10,
+        marginTop: 5,
+        maxHeight: 200,
+        zIndex: 2,
+    },
+    predictionItem: {
+        padding: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e0e0e0',
+    },
+    predictionText: {
+        fontSize: 14,
+        color: '#000',
     },
 });

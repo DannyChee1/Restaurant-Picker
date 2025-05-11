@@ -41,4 +41,7 @@ app-example
 
 .env
 
+# Config files that might contain sensitive information
+app.config.js
+
 
